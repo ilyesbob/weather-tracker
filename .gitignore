@@ -1,0 +1,44 @@
+# --- Секреты и локальная конфигурация ---
+# Реальный .env с секретами НЕ коммитим.
+.env
+.env.local
+.env.*.local
+
+# --- Go: собранные бинарники и артефакты ---
+# Бинарники, собранные `go build` в корне.
+/weathertracker-api
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, собранный `go test -c`.
+*.test
+
+# Файлы профилирования (coverage, pprof).
+*.out
+coverage.txt
+coverage.html
+
+# Каталог зависимостей (актуален только для старых GOPATH-проектов).
+/vendor/
+
+# --- IDE / редакторы ---
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+
+# --- ОС ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Логи и временные файлы ---
+*.log
+tmp/

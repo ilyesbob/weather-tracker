@@ -1,0 +1,719 @@
+basePath: /
+definitions:
+  domain.CurrentWeather:
+    properties:
+      condition:
+        type: string
+      feelsLike:
+        type: number
+      humidity:
+        type: integer
+      icon:
+        type: string
+      observedAt:
+        type: string
+      temperature:
+        type: number
+      weatherCode:
+        type: integer
+      windDirection:
+        type: number
+      windGusts:
+        type: number
+      windSpeed:
+        type: number
+    type: object
+  domain.Location:
+    properties:
+      countryCode:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+      timezone:
+        type: string
+    type: object
+  domain.MetricPreference:
+    properties:
+      enabled:
+        type: boolean
+      ideal:
+        type: number
+      max:
+        type: number
+      min:
+        type: number
+      weight:
+        type: number
+    type: object
+  domain.MetricScore:
+    properties:
+      metric:
+        type: string
+      reason:
+        type: string
+      score:
+        type: number
+      value:
+        type: number
+    type: object
+  domain.Orientation:
+    enum:
+    - onshore
+    - offshore
+    - cross-shore
+    - unknown
+    type: string
+    x-enum-varnames:
+    - OrientationOnshore
+    - OrientationOffshore
+    - OrientationCrossShore
+    - OrientationUnknown
+  domain.PrecipitationCriterion:
+    properties:
+      enabled:
+        type: boolean
+      maxProbability:
+        type: number
+      weight:
+        type: number
+    type: object
+  domain.RankedCity:
+    properties:
+      countryCode:
+        type: string
+      isLeader:
+        type: boolean
+      isStale:
+        type: boolean
+      lastUpdated:
+        type: string
+      latitude:
+        type: number
+      locationId:
+        type: integer
+      longitude:
+        type: number
+      metrics:
+        items:
+          $ref: '#/definitions/domain.MetricScore'
+        type: array
+      name:
+        type: string
+      rank:
+        type: integer
+      reasons:
+        items:
+          type: string
+        type: array
+      score:
+        type: number
+      weather:
+        $ref: '#/definitions/domain.CurrentWeather'
+    type: object
+  domain.RankingCriteria:
+    properties:
+      precipitation:
+        $ref: '#/definitions/domain.PrecipitationCriterion'
+      temperature:
+        $ref: '#/definitions/domain.MetricPreference'
+      wind:
+        $ref: '#/definitions/domain.MetricPreference'
+    type: object
+  domain.RankingResult:
+    properties:
+      cities:
+        items:
+          $ref: '#/definitions/domain.RankedCity'
+        type: array
+      criteria:
+        $ref: '#/definitions/domain.RankingCriteria'
+      generatedAt:
+        type: string
+    type: object
+  domain.Recommendation:
+    properties:
+      averageWindDirection:
+        type: number
+      averageWindGusts:
+        type: number
+      averageWindSpeed:
+        type: number
+      end:
+        type: string
+      isBest:
+        type: boolean
+      isStale:
+        type: boolean
+      latitude:
+        type: number
+      locationId:
+        type: integer
+      longitude:
+        type: number
+      orientation:
+        $ref: '#/definitions/domain.Orientation'
+      reasons:
+        items:
+          type: string
+        type: array
+      score:
+        type: number
+      spotName:
+        type: string
+      start:
+        type: string
+    type: object
+  domain.RecommendationResult:
+    properties:
+      generatedAt:
+        type: string
+      message:
+        type: string
+      profile:
+        $ref: '#/definitions/domain.WindsurfProfile'
+      recommendations:
+        items:
+          $ref: '#/definitions/domain.Recommendation'
+        type: array
+    type: object
+  domain.SavedLocation:
+    properties:
+      alias:
+        type: string
+      countryCode:
+        type: string
+      displayOrder:
+        type: integer
+      latitude:
+        type: number
+      locationId:
+        type: integer
+      longitude:
+        type: number
+      name:
+        type: string
+      savedAt:
+        type: string
+      shoreNormalDeg:
+        type: number
+      timezone:
+        type: string
+    type: object
+  domain.SkillLevel:
+    enum:
+    - beginner
+    - intermediate
+    - advanced
+    - pro
+    type: string
+    x-enum-varnames:
+    - LevelBeginner
+    - LevelIntermediate
+    - LevelAdvanced
+    - LevelPro
+  domain.Spot:
+    properties:
+      latitude:
+        type: number
+      locationId:
+        type: integer
+      longitude:
+        type: number
+      name:
+        type: string
+      shoreNormalDeg:
+        type: number
+    type: object
+  domain.WindsurfProfile:
+    properties:
+      level:
+        $ref: '#/definitions/domain.SkillLevel'
+      updatedAt:
+        type: string
+      windSpeedMax:
+        type: number
+      windSpeedMin:
+        type: number
+    type: object
+  handler.authResponse:
+    properties:
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/handler.userResponse'
+    type: object
+  handler.credentialsRequest:
+    properties:
+      email:
+        example: rider@example.com
+        type: string
+      password:
+        example: s3cret-passphrase
+        type: string
+    type: object
+  handler.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handler.locationListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/domain.Location'
+        type: array
+    type: object
+  handler.savedLocationListResponse:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/domain.SavedLocation'
+        type: array
+      limit:
+        type: integer
+    type: object
+  handler.userResponse:
+    properties:
+      createdAt:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+    type: object
+  service.AddSavedInput:
+    properties:
+      alias:
+        type: string
+      countryCode:
+        type: string
+      latitude:
+        type: number
+      locationId:
+        type: integer
+      longitude:
+        type: number
+      name:
+        type: string
+      shoreNormalDeg:
+        type: number
+      timezone:
+        type: string
+    type: object
+  service.CityInput:
+    properties:
+      countryCode:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+    type: object
+  service.ProfileInput:
+    properties:
+      level:
+        $ref: '#/definitions/domain.SkillLevel'
+      windSpeedMax:
+        type: number
+      windSpeedMin:
+        type: number
+    type: object
+  service.RankingInput:
+    properties:
+      cities:
+        items:
+          $ref: '#/definitions/service.CityInput'
+        type: array
+      criteria:
+        $ref: '#/definitions/domain.RankingCriteria'
+      locationIds:
+        items:
+          type: integer
+        type: array
+    type: object
+  service.RecommendInput:
+    properties:
+      days:
+        type: integer
+      level:
+        $ref: '#/definitions/domain.SkillLevel'
+      slotHours:
+        type: integer
+      spots:
+        items:
+          $ref: '#/definitions/domain.Spot'
+        type: array
+      windSpeedMax:
+        type: number
+      windSpeedMin:
+        type: number
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: team@weathertracker.dev
+    name: Weather Tracker Team
+  description: MVP backend for the Weather Tracker service. Implements User Story
+    1 (city ranking for trip planning by weather priorities) and User Story 2 (windsurfing
+    spot and time-slot recommendations).
+  termsOfService: http://swagger.io/terms/
+  title: Weather Tracker API
+  version: "1.0"
+paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Verifies credentials and returns a Bearer token.
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.credentialsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.authResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Authenticate and obtain a JWT
+      tags:
+      - auth
+  /api/v1/auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a user and returns a JWT the React SPA can store.
+      parameters:
+      - description: Registration credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.credentialsRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.authResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Register a new account
+      tags:
+      - auth
+  /api/v1/locations/search:
+    get:
+      description: Geocodes a free-text query and returns candidates with stable IDs.
+      parameters:
+      - description: City name to search for
+        example: Berlin
+        in: query
+        name: q
+        required: true
+        type: string
+      - description: Maximum number of results (default 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.locationListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: Search locations by name
+      tags:
+      - locations
+  /api/v1/users/me/locations:
+    get:
+      description: Returns the authenticated user's comparison list (User Story 1).
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.savedLocationListResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: List saved locations
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Adds a city (max 5) to the authenticated user's comparison list.
+      parameters:
+      - description: Location to save
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.AddSavedInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/domain.SavedLocation'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a location to the comparison list
+      tags:
+      - users
+  /api/v1/users/me/locations/{id}:
+    delete:
+      description: Deletes a city from the authenticated user's comparison list.
+      parameters:
+      - description: Location ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove a location from the comparison list
+      tags:
+      - users
+  /api/v1/users/me/windsurf-profile:
+    get:
+      description: Returns the rider's level and target wind range.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.WindsurfProfile'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get the windsurf profile
+      tags:
+      - windsurf
+    put:
+      consumes:
+      - application/json
+      description: Stores the rider's level and acceptable wind speed range.
+      parameters:
+      - description: Rider profile
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.ProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.WindsurfProfile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create or update the windsurf profile
+      tags:
+      - windsurf
+  /api/v1/weather/rank:
+    post:
+      consumes:
+      - application/json
+      description: Scores up to 5 cities against the traveller's priorities, returns
+        them in descending order and highlights the leader. Cities with data older
+        than 5 minutes are flagged with isStale=true.
+      parameters:
+      - description: Cities and ranking criteria
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.RankingInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.RankingResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Rank cities by weather priorities
+      tags:
+      - ranking
+  /api/v1/windsurf/recommendations:
+    post:
+      consumes:
+      - application/json
+      description: Analyses the forecast across several spots, accounts for wind direction
+        relative to the shore (onshore/offshore/cross-shore) and the rider's level,
+        then returns ranked recommendations with reasons. Falls back to saved locations
+        when no spots are supplied.
+      parameters:
+      - description: Recommendation parameters
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.RecommendInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.RecommendationResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - BearerAuth: []
+      summary: Recommend a windsurfing spot and time slot
+      tags:
+      - windsurf
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and the JWT returned by /api/v1/auth/login.
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
