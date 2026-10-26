@@ -12,17 +12,16 @@ import (
 	"weathertracker/internal/service"
 )
 
-// Deps bundles every dependency the router needs.
 type Deps struct {
 	Auth           *service.AuthService
 	Locations      *service.LocationService
 	Ranking        *service.RankingService
 	Windsurf       *service.WindsurfService
+	Activity       *service.ActivityService
 	AllowedOrigins []string
 	Logger         *slog.Logger
 }
 
-// NewRouter wires middleware and routes into a ready-to-serve http.Handler.
 func NewRouter(d Deps) http.Handler {
 	r := chi.NewRouter()
 
@@ -37,8 +36,8 @@ func NewRouter(d Deps) http.Handler {
 	locationHandler := NewLocationHandler(d.Locations)
 	rankingHandler := NewRankingHandler(d.Ranking)
 	windsurfHandler := NewWindsurfHandler(d.Windsurf)
+	activityHandler := NewActivityHandler(d.Activity)
 
-	// Interactive OpenAPI documentation for the team.
 	r.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/docs/index.html", http.StatusMovedPermanently)
 	})
@@ -49,12 +48,10 @@ func NewRouter(d Deps) http.Handler {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Public endpoints.
 		r.Post("/auth/register", authHandler.Register)
 		r.Post("/auth/login", authHandler.Login)
 		r.Get("/locations/search", locationHandler.Search)
 
-		// Endpoints requiring a Bearer token.
 		r.Group(func(r chi.Router) {
 			r.Use(auth)
 
@@ -67,6 +64,7 @@ func NewRouter(d Deps) http.Handler {
 
 			r.Post("/weather/rank", rankingHandler.Rank)
 			r.Post("/windsurf/recommendations", windsurfHandler.Recommend)
+			r.Post("/activity/recommendations", activityHandler.Recommend)
 		})
 	})
 
