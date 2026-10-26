@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "MVP backend for the Weather Tracker service. Implements User Story 1 (city ranking for trip planning by weather priorities) and User Story 2 (windsurfing spot and time-slot recommendations).",
+        "description": "MVP backend for the Weather Tracker service. Implements User Story 1 (city ranking for trip planning by weather priorities), User Story 2 (windsurfing spot and time-slot recommendations), and User Story 3 (outdoor activity time window recommendations).",
         "title": "Weather Tracker API",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
@@ -523,6 +523,69 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/activity/recommendations": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Analyses hourly forecast for a city and date, recommending the best time windows for outdoor workout or walking.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "activity"
+                ],
+                "summary": "Recommend optimal time windows for outdoor activity",
+                "parameters": [
+                    {
+                        "description": "Activity recommendation criteria",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.ActivityInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.ActivityRecommendationResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
                         "schema": {
                             "$ref": "#/definitions/handler.errorResponse"
                         }
@@ -1077,6 +1140,119 @@
                 },
                 "windSpeedMin": {
                     "type": "number"
+                }
+            }
+        },
+        "domain.ActivityConditions": {
+            "type": "object",
+            "properties": {
+                "maxPrecipitationProbability": {
+                    "type": "number"
+                },
+                "maxWindSpeed": {
+                    "type": "number"
+                },
+                "tempMax": {
+                    "type": "number"
+                },
+                "tempMin": {
+                    "type": "number"
+                }
+            }
+        },
+        "domain.ActivityTimeWindow": {
+            "type": "object",
+            "properties": {
+                "averageFeelsLike": {
+                    "type": "number"
+                },
+                "averageTemperature": {
+                    "type": "number"
+                },
+                "averageWindSpeed": {
+                    "type": "number"
+                },
+                "condition": {
+                    "type": "string"
+                },
+                "end": {
+                    "type": "string"
+                },
+                "isBest": {
+                    "type": "boolean"
+                },
+                "matchesConditions": {
+                    "type": "boolean"
+                },
+                "maxPrecipitationProbability": {
+                    "type": "number"
+                },
+                "reasons": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "score": {
+                    "type": "number"
+                },
+                "start": {
+                    "type": "string"
+                },
+                "weatherCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.ActivityRecommendationResult": {
+            "type": "object",
+            "properties": {
+                "activity": {
+                    "type": "string"
+                },
+                "conditions": {
+                    "$ref": "#/definitions/domain.ActivityConditions"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "generatedAt": {
+                    "type": "string"
+                },
+                "location": {
+                    "$ref": "#/definitions/domain.Location"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "windows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ActivityTimeWindow"
+                    }
+                }
+            }
+        },
+        "service.ActivityInput": {
+            "type": "object",
+            "properties": {
+                "activity": {
+                    "type": "string"
+                },
+                "city": {
+                    "$ref": "#/definitions/service.CityInput"
+                },
+                "conditions": {
+                    "$ref": "#/definitions/domain.ActivityConditions"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "durationHours": {
+                    "type": "integer"
+                },
+                "locationId": {
+                    "type": "integer"
                 }
             }
         }

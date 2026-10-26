@@ -1,5 +1,3 @@
-// Package main is the entrypoint of the Weather Tracker API. It wires the
-// dependencies, starts the HTTP server and performs a graceful shutdown.
 package main
 
 import (
@@ -14,7 +12,7 @@ import (
 
 	"github.com/joho/godotenv"
 
-	_ "weathertracker/docs" // generated OpenAPI spec registered on init
+	_ "weathertracker/docs"
 	"weathertracker/internal/config"
 	"weathertracker/internal/handler"
 	"weathertracker/internal/repository/memory"
@@ -22,8 +20,6 @@ import (
 	"weathertracker/internal/service"
 )
 
-// HTTP server timeouts and shutdown budget. Named so the whole team can tune
-// them in one place.
 const (
 	readHeaderTimeout = 10 * time.Second
 	readTimeout       = 15 * time.Second
@@ -34,7 +30,7 @@ const (
 
 // @title           Weather Tracker API
 // @version         1.0
-// @description     MVP backend for the Weather Tracker service. Implements User Story 1 (city ranking for trip planning by weather priorities) and User Story 2 (windsurfing spot and time-slot recommendations).
+// @description     MVP backend for the Weather Tracker service. Implements User Story 1 (city ranking for trip planning by weather priorities), User Story 2 (windsurfing spot and time-slot recommendations), and User Story 3 (outdoor activity time window recommendations).
 // @termsOfService  http://swagger.io/terms/
 //
 // @contact.name    Weather Tracker Team
@@ -51,16 +47,10 @@ func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
 	slog.SetDefault(logger)
 
-	// Load a local .env file if present. A missing file is fine: in production
-	// configuration is provided through real environment variables. Existing
-	// environment variables always win over .env values.
 	_ = godotenv.Load()
 
 	cfg := config.Load()
 
-	// Infrastructure: in-memory adapters for the MVP. Swapping them for
-	// PostgreSQL/Redis requires no change in the service layer thanks to the
-	// repository interfaces.
 	userStore := memory.NewUserStore()
 	catalog := memory.NewLocationStore()
 	savedStore := memory.NewSavedLocationStore()
@@ -69,17 +59,18 @@ func main() {
 	openMeteo := weather.NewClient(cfg.WeatherBaseURL, cfg.GeocodingBaseURL, cfg.UpstreamTimeout)
 	cachedWeather := weather.NewCachedProvider(openMeteo, cfg.WeatherCacheTTL)
 
-	// Services.
 	authService := service.NewAuthService(userStore, cfg.JWTSecret, cfg.JWTTTL)
 	locationService := service.NewLocationService(openMeteo, catalog, savedStore)
 	rankingService := service.NewRankingService(catalog, cachedWeather, cfg.StaleThreshold)
 	windsurfService := service.NewWindsurfService(profileStore, savedStore, catalog, cachedWeather, cfg.StaleThreshold)
+	activityService := service.NewActivityService(catalog, savedStore, cachedWeather, cfg.StaleThreshold)
 
 	router := handler.NewRouter(handler.Deps{
 		Auth:           authService,
 		Locations:      locationService,
 		Ranking:        rankingService,
 		Windsurf:       windsurfService,
+		Activity:       activityService,
 		AllowedOrigins: cfg.AllowedOrigins,
 		Logger:         logger,
 	})
@@ -93,14 +84,10 @@ func main() {
 		IdleTimeout:       idleTimeout,
 	}
 
-	// Tier 1: catch the shutdown signals (Ctrl+C -> SIGINT, container stop ->
-	// SIGTERM) and run a graceful drain before the process exits.
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
 	defer signal.Stop(signals)
 
-	// ListenAndServe blocks, so it runs in a goroutine while main waits for a
-	// signal or a fatal server error.
 	serverErr := make(chan error, 1)
 	go func() {
 		logger.Info("server starting",
@@ -119,12 +106,8 @@ func main() {
 		logger.Error("server failed", slog.String("error", err.Error()))
 	}
 
-	// Stop intercepting signals: a second Ctrl+C now triggers the default
-	// behaviour (immediate termination) as an escape hatch if a request hangs.
 	signal.Stop(signals)
 
-	// Give in-flight requests up to shutdownTimeout to finish, then force close
-	// so a stuck handler cannot block the process forever.
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
 

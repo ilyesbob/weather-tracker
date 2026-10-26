@@ -70,6 +70,7 @@ func newTestAPI(t *testing.T) testAPI {
 	locSvc := service.NewLocationService(geocoder, catalog, saved)
 	rankSvc := service.NewRankingService(catalog, provider, 5*time.Minute)
 	wsSvc := service.NewWindsurfService(profiles, saved, catalog, provider, 5*time.Minute)
+	actSvc := service.NewActivityService(catalog, saved, provider, 5*time.Minute)
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	router := handler.NewRouter(handler.Deps{
@@ -77,6 +78,7 @@ func newTestAPI(t *testing.T) testAPI {
 		Locations:      locSvc,
 		Ranking:        rankSvc,
 		Windsurf:       wsSvc,
+		Activity:       actSvc,
 		AllowedOrigins: []string{"http://localhost:5173"},
 		Logger:         logger,
 	})
@@ -382,4 +384,34 @@ func TestCORSPreflight(t *testing.T) {
 
 func itoa(v int64) string {
 	return strconv.FormatInt(v, 10)
+}
+
+func TestActivityEndpoint(t *testing.T) {
+	api := newTestAPI(t)
+	token := api.tokenFor(t)
+
+	body := map[string]any{
+		"city": map[string]any{
+			"name":        "Berlin",
+			"latitude":    52.52,
+			"longitude":   13.41,
+			"countryCode": "DE",
+		},
+		"date":     time.Now().UTC().Format("2006-01-02"),
+		"activity": "running",
+	}
+
+	rec := api.do(t, http.MethodPost, "/api/v1/activity/recommendations", token, body)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200 OK, got %d: %s", rec.Code, rec.Body.String())
+	}
+
+	var res domain.ActivityRecommendationResult
+	if err := json.Unmarshal(rec.Body.Bytes(), &res); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+
+	if len(res.Windows) == 0 {
+		t.Errorf("expected at least one window")
+	}
 }
