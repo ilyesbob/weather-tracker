@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Compass, Waves, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Compass, Waves, Wind, CheckCircle2, AlertCircle } from 'lucide-react';
 import { request } from '../api/client';
 import { SkillLevel, WindsurfProfile, RecommendationResult } from '../types/api';
 import {
@@ -66,10 +66,10 @@ export const WindsurfTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            {/* Профиль райдера */}
+            {/* Профиль райдера и параметры ветра */}
             <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6">
                 <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
-                    <Waves className="w-5 h-5 text-sky-400" /> Профиль райдера
+                    <Waves className="w-5 h-5 text-sky-400" /> Профиль райдера и параметры ветра
                 </h2>
 
                 {error && (
@@ -78,51 +78,64 @@ export const WindsurfTab: React.FC = () => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">Уровень катания</label>
-                        <select
-                            value={profile.level}
-                            onChange={(e) => setProfile({ ...profile, level: e.target.value as SkillLevel })}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                        >
-                            <option value="beginner">Новичок</option>
-                            <option value="intermediate">Средний</option>
-                            <option value="advanced">Продвинутый</option>
-                            <option value="pro">Профи</option>
-                        </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Уровень катания */}
+                    <div className="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between">
+              <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                <Waves className="w-4 h-4 text-sky-400" /> Уровень катания
+              </span>
+                        </div>
+                        <div>
+                            <label className="block text-xs text-slate-400 mb-1.5">Квалификация райдера</label>
+                            <select
+                                value={profile.level}
+                                onChange={(e) => setProfile({ ...profile, level: e.target.value as SkillLevel })}
+                                className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-sky-500"
+                            >
+                                <option value="beginner">Новичок (Beginner)</option>
+                                <option value="intermediate">Средний (Intermediate)</option>
+                                <option value="advanced">Продвинутый (Advanced)</option>
+                                <option value="pro">Профи (Pro)</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">
-                            Мин. комфортный ветер (м/с)
-                        </label>
-                        <input
-                            type="number"
-                            value={profile.windSpeedMin}
-                            onChange={(e) =>
-                                setProfile({ ...profile, windSpeedMin: parseFloat(e.target.value) || 0 })
-                            }
-                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-medium text-slate-400 mb-1">
-                            Макс. комфортный ветер (м/с)
-                        </label>
-                        <input
-                            type="number"
-                            value={profile.windSpeedMax}
-                            onChange={(e) =>
-                                setProfile({ ...profile, windSpeedMax: parseFloat(e.target.value) || 0 })
-                            }
-                            className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white"
-                        />
+                    {/* Ветер (м/с) — карточка в точности как на скриншоте */}
+                    <div className="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
+                        <div className="flex items-center justify-between">
+              <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
+                <Wind className="w-4 h-4 text-cyan-400" /> Ветер (м/с)
+              </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <label className="text-slate-400">Мин (м/с)</label>
+                                <input
+                                    type="number"
+                                    value={profile.windSpeedMin}
+                                    onChange={(e) =>
+                                        setProfile({ ...profile, windSpeedMin: parseFloat(e.target.value) || 0 })
+                                    }
+                                    className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-slate-400">Макс (м/с)</label>
+                                <input
+                                    type="number"
+                                    value={profile.windSpeedMax}
+                                    onChange={(e) =>
+                                        setProfile({ ...profile, windSpeedMax: parseFloat(e.target.value) || 0 })
+                                    }
+                                    className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="mt-4 flex gap-3">
+                <div className="mt-4 flex flex-wrap items-center gap-3">
                     <button
                         onClick={saveProfile}
                         className="bg-slate-700 hover:bg-slate-600 text-white text-sm font-medium px-4 py-2 rounded-xl transition"
@@ -142,7 +155,7 @@ export const WindsurfTab: React.FC = () => {
                 </div>
             </div>
 
-            {/* Результаты рекомендаций */}
+            {/* Результаты рекомендаций спотов */}
             {result && (
                 <div className="space-y-4">
                     {result.message && (
@@ -162,17 +175,15 @@ export const WindsurfTab: React.FC = () => {
                                         : 'bg-slate-800/60 border-slate-700'
                                 }`}
                             >
-                                {/* Заголовок карточки */}
                                 <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                                     <div>
                                         <h4 className="text-lg font-bold text-white flex items-center gap-2">
                                             {rec.spotName}
                                             {rec.isBest && (
                                                 <span className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                    Лучший вариант
-                  </span>
+                          Лучший вариант
+                        </span>
                                             )}
-                                            {/* Одиночный бейдж ориентации на русском */}
                                             <span
                                                 className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
                                                     rec.orientation === 'onshore'
@@ -182,23 +193,19 @@ export const WindsurfTab: React.FC = () => {
                                                             : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
                                                 }`}
                                             >
-                  {translateOrientation(rec.orientation)}
-                </span>
+                        {translateOrientation(rec.orientation)}
+                      </span>
                                         </h4>
-
-                                        {/* Время слота строго в формате чч:мм */}
                                         <p className="text-xs text-slate-400 mt-1">
                                             Слот: {formatSlotRange(rec.start, rec.end)}
                                         </p>
                                     </div>
-
                                     <div className="text-right">
                                         <div className="text-2xl font-black text-sky-400">{rec.score} / 100</div>
                                         <div className="text-xs text-slate-400">Индекс условий</div>
                                     </div>
                                 </div>
 
-                                {/* Параметры ветра */}
                                 <div className="grid grid-cols-3 gap-3 bg-slate-900/80 p-3 rounded-xl my-3 text-center">
                                     <div>
                                         <div className="text-xs text-slate-400">Средняя скорость</div>
@@ -221,7 +228,6 @@ export const WindsurfTab: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Список пояснений на русском языке */}
                                 <div className="space-y-1.5 pt-1">
                                     {rec.reasons.map((reason, idx) => (
                                         <div key={idx} className="flex items-start gap-2 text-xs text-slate-300">
@@ -238,4 +244,3 @@ export const WindsurfTab: React.FC = () => {
         </div>
     );
 };
-
