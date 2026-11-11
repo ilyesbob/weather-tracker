@@ -8,6 +8,7 @@ import {
     translateOrientation,
     translateReason,
 } from '../utils/weather';
+import { SpotWindMap } from './SpotWindMap';
 
 export const WindsurfTab: React.FC = () => {
     const [profile, setProfile] = useState<WindsurfProfile>({
@@ -93,22 +94,21 @@ export const WindsurfTab: React.FC = () => {
                                 onChange={(e) => setProfile({ ...profile, level: e.target.value as SkillLevel })}
                                 className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white focus:outline-none focus:border-sky-500"
                             >
-                                <option value="beginner">Новичок (Beginner)</option>
-                                <option value="intermediate">Средний (Intermediate)</option>
-                                <option value="advanced">Продвинутый (Advanced)</option>
-                                <option value="pro">Профи (Pro)</option>
+                                <option value="beginner">Новичок</option>
+                                <option value="intermediate">Средний</option>
+                                <option value="advanced">Продвинутый</option>
+                                <option value="pro">Профи</option>
                             </select>
                         </div>
                     </div>
 
-                    {/* Ветер (м/с) — карточка в точности как на скриншоте */}
                     <div className="p-4 bg-slate-900/60 border border-slate-700/60 rounded-xl space-y-3">
                         <div className="flex items-center justify-between">
               <span className="font-semibold text-white flex items-center gap-1.5 text-sm">
                 <Wind className="w-4 h-4 text-cyan-400" /> Ветер (м/с)
               </span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="grid grid-cols-2 gap-3 text-xs">
                             <div>
                                 <label className="text-slate-400">Мин (м/с)</label>
                                 <input
@@ -175,66 +175,90 @@ export const WindsurfTab: React.FC = () => {
                                         : 'bg-slate-800/60 border-slate-700'
                                 }`}
                             >
-                                <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-                                    <div>
-                                        <h4 className="text-lg font-bold text-white flex items-center gap-2">
-                                            {rec.spotName}
-                                            {rec.isBest && (
-                                                <span className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                          Лучший вариант
-                        </span>
-                                            )}
-                                            <span
-                                                className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
-                                                    rec.orientation === 'onshore'
-                                                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                                                        : rec.orientation === 'offshore'
-                                                            ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                                                            : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
-                                                }`}
-                                            >
-                        {translateOrientation(rec.orientation)}
+                                {/* Сетка: Слева карта (30-35%), Справа информация (65-70%) */}
+                                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+
+                                    {/* ЛЕВАЯ КОЛОНКА: Статичная карта с тонкими стрелочками */}
+                                    <div className="md:col-span-4 lg:col-span-3 flex flex-col">
+                                        <SpotWindMap
+                                            latitude={rec.latitude}
+                                            longitude={rec.longitude}
+                                            spotName={rec.spotName}
+                                            windDirection={rec.averageWindDirection}
+                                            windSpeed={rec.averageWindSpeed}
+                                        />
+                                    </div>
+
+                                    {/* ПРАВАЯ КОЛОНКА: Вся информация с выравниванием по сетке */}
+                                    <div className="md:col-span-8 lg:col-span-9 flex flex-col justify-between space-y-4">
+
+                                        {/* Верхняя строка: Название, Бейджи и Балл */}
+                                        <div className="flex flex-wrap items-start justify-between gap-3">
+                                            <div>
+                                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                                    {rec.spotName}
+                                                    {rec.isBest && (
+                                                        <span className="bg-sky-500/20 text-sky-300 border border-sky-500/30 text-xs px-2.5 py-0.5 rounded-full font-medium">
+                        Лучший вариант
                       </span>
-                                        </h4>
-                                        <p className="text-xs text-slate-400 mt-1">
-                                            Слот: {formatSlotRange(rec.start, rec.end)}
-                                        </p>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-2xl font-black text-sky-400">{rec.score} / 100</div>
-                                        <div className="text-xs text-slate-400">Индекс условий</div>
-                                    </div>
-                                </div>
+                                                    )}
+                                                    <span
+                                                        className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
+                                                            rec.orientation === 'onshore'
+                                                                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                                                                : rec.orientation === 'offshore'
+                                                                    ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                                                                    : 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                                                        }`}
+                                                    >
+                      {translateOrientation(rec.orientation)}
+                    </span>
+                                                </h4>
+                                                <p className="text-xs text-slate-400 mt-1">
+                                                    Слот: {formatSlotRange(rec.start, rec.end)}
+                                                </p>
+                                            </div>
 
-                                <div className="grid grid-cols-3 gap-3 bg-slate-900/80 p-3 rounded-xl my-3 text-center">
-                                    <div>
-                                        <div className="text-xs text-slate-400">Средняя скорость</div>
-                                        <div className="text-base font-semibold text-white">
-                                            {rec.averageWindSpeed} м/с
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-sky-400">{rec.score} / 100</div>
+                                                <div className="text-xs text-slate-400">Индекс условий</div>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-400">Порывы</div>
-                                        <div className="text-base font-semibold text-white">
-                                            {rec.averageWindGusts} м/с
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs text-slate-400">Направление</div>
-                                        <div className="text-base font-semibold text-white flex items-center justify-center gap-1">
-                                            <Compass className="w-4 h-4 text-sky-400" />
-                                            {formatWindDirection(rec.averageWindDirection)}
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div className="space-y-1.5 pt-1">
-                                    {rec.reasons.map((reason, idx) => (
-                                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-300">
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
-                                            <span>{translateReason(reason)}</span>
+                                        {/* Сетка параметров ветра */}
+                                        <div className="grid grid-cols-3 gap-3 bg-slate-900/80 p-3 rounded-xl text-center">
+                                            <div>
+                                                <div className="text-xs text-slate-400">Средняя скорость</div>
+                                                <div className="text-base font-semibold text-white">
+                                                    {rec.averageWindSpeed} м/с
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-400">Порывы</div>
+                                                <div className="text-base font-semibold text-white">
+                                                    {rec.averageWindGusts} м/с
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-400">Направление</div>
+                                                <div className="text-base font-semibold text-white flex items-center justify-center gap-1">
+                                                    <Compass className="w-4 h-4 text-sky-400" />
+                                                    {formatWindDirection(rec.averageWindDirection)}
+                                                </div>
+                                            </div>
                                         </div>
-                                    ))}
+
+                                        {/* Список пояснений на русском языке */}
+                                        <div className="space-y-1.5 pt-1">
+                                            {rec.reasons.map((reason, idx) => (
+                                                <div key={idx} className="flex items-start gap-2 text-xs text-slate-300">
+                                                    <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
+                                                    <span>{translateReason(reason)}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                    </div>
                                 </div>
                             </div>
                         ))}
