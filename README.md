@@ -1,15 +1,18 @@
 # Трекер погоды
 
-Backend: Golang  
+## Команда проекта (Группа 5130904/40108) 
 
-Frontend: Веб-приложение (React SPA)  
+Сазонов Богдан Михайлович - Backend - user stories 1, 2; MVP;\
+Рыжов Александр Васильевич - Frontend; UI tweaks;\
+Буабид Лайес Абдельхаким - Backend - user story 3;
 
-База данных: PostgreSQL 
+## Технологический стек
 
-Кэширование: Redis
-
-Внешний API: Open-Meteo Weather API ([https://open-meteo.com/](https://open-meteo.com/))
-
+Backend: Golang\
+Frontend: Веб-приложение (React SPA)\
+База данных: PostgreSQL\
+Кэширование: Redis\
+Внешний API: Open-Meteo Weather API ([https://open-meteo.com/](https://open-meteo.com/))\
 Ограничения API: 10000 API calls per day, 5000 per hour and 600 per minute
 
 ## Требования
